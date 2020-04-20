@@ -1,0 +1,62 @@
+.container{style:"margin-top:50px;"}
+  %table
+    %tr
+      %th Product Name
+      %th Product Description
+      %th Brand Name
+      %th Actions
+    -@products.each_with_index do|product, i|
+      %tr{id: "non_editable_row_#{i}"}  
+        %td=product[0]
+        %td=product[1]
+        %td=product[2]
+        %td
+          = link_to 'Edit', "#" , :onclick => "return show_editable(#{i})" 
+          |
+          = link_to 'Delete', "#" , :onclick => "return delete_row(#{i})"
+        %tr{id: "editable_row_#{i}",style:'display:none;'}  
+          %td=text_field_tag :product_name, product[0], id: "p_name_#{i}"
+          %td=text_area_tag :product_description, product[1],style: "width:700px; height:60px;" , id: "p_description_#{i}"
+          %td=text_field_tag :brand_name, product[2], id: "b_name_#{i}"
+          %td=submit_tag :save, :onclick => "return submit_form(#{i})", class: "btn btn-info"
+  %br
+  %button{onclick:"new_row()",class: 'btn btn-primary'} + Add Row
+:javascript
+    function show_editable(row_id){
+      $('#editable_row_' + row_id).show();
+      $('#non_editable_row_'+ row_id).hide();
+      event.preventDefault()
+    }
+    function delete_row(row_id){
+      $.ajax({url: "/products/"+row_id, 
+        type: 'DELETE',
+        success: function(result){
+        document.location.href = '/products'
+        }
+      });
+    }
+    function new_row(){
+      $.ajax({url: "/products/new", 
+        type: 'GET',
+        success: function(result){
+        document.location.href = '/products'
+        }
+      });
+    }  
+    function submit_form(row_id){
+      $.ajax({url: "/products/"+row_id, 
+        type: 'PUT',
+        data: {pn: $('#p_name_' + row_id).val(), pd: $('#p_description_' + row_id).val(), bn: $('#b_name_' + row_id).val() },
+        success: function(result){
+          document.location.href = '/products'
+        }
+      });
+    }  
+:css
+  table {
+    border-collapse: collapse;
+  }
+  table, td, th {
+    border: 1px solid black;
+    padding: 3px;
+  }
